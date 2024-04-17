@@ -1,3 +1,6 @@
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+import relativeTime from "dayjs/plugin/relativeTime";
 import {
 	ChevronLeft,
 	ChevronRight,
@@ -6,8 +9,37 @@ import {
 	MoreHorizontal,
 	Search,
 } from "lucide-react";
+import { IconButton } from "./icon-button";
+import { Table } from "./table/table";
+import { TableHeader } from "./table/table-header";
+import { TableCell } from "./table/table-cell";
+import { TableRow } from "./table/table-row";
+import { attendees } from "../data/attendees";
+import { useState } from "react";
+
+dayjs.extend(relativeTime);
+dayjs.locale("pt-br");
 
 export function AttendeeList() {
+	const [page, setPage] = useState(1);
+	const totalPages = Math.ceil(attendees.length / 10);
+
+	function goToNextPage() {
+		setPage(page + 1);
+	}
+
+	function goToPreviousPage() {
+		setPage(page - 1);
+	}
+
+	function goToFirstPage() {
+		setPage(1);
+	}
+
+	function goToLastPage() {
+		setPage(totalPages);
+	}
+
 	return (
 		<div className='flex flex-col gap-4'>
 			<div className='flex items-center gap-3'>
@@ -22,108 +54,91 @@ export function AttendeeList() {
 				</div>
 			</div>
 
-			<div className='border border-white/10 rounded-lg'>
-				<table className='w-full'>
-					<thead>
-						<tr className='border-b border-white/10'>
-							<th
-								style={{ width: 48 }}
-								className='py-3 px-4 text-sm font-semibold text-left'
-							>
-								<input
-									type='checkbox'
-									className='size-4 bg-black/20 rounded border border-white/10 checked:bg-orange-400'
-								/>
-							</th>
-							<th className='py-3 px-4 text-sm font-semibold text-left'>
-								Código
-							</th>
-							<th className='py-3 px-4 text-sm font-semibold text-left'>
-								Participante
-							</th>
-							<th className='py-3 px-4 text-sm font-semibold text-left'>
-								Data inscrição
-							</th>
-							<th className='py-3 px-4 text-sm font-semibold text-left'>
-								Data do check-in
-							</th>
-							<th
-								style={{ width: 64 }}
-								className='py-3 px-4 text-sm font-semibold text-left'
-							></th>
-						</tr>
-					</thead>
-					<tbody>
-						{Array.from({ length: 8 }).map((_, index) => {
-							return (
-								<tr
-									className='border-b border-white/10 hover:bg-white/5'
-									key={index}
-								>
-									<td className='py-3 px-4 text-sm text-zinc-300'>
-										<input
-											type='checkbox'
-											className='size-4 bg-black/20 rounded border border-white/10 checked:bg-orange-400'
-										/>
-									</td>
-									<td className='py-3 px-4 text-sm text-zinc-300'>5655</td>
-									<td className='py-3 px-4 text-sm text-zinc-300'>
-										<div className='flex flex-col gap-1'>
-											<span className='text-white font-semibold'>
-												Ana Paula
-											</span>
-											<span>anaqueiroz.dev@gmail.com</span>
-										</div>
-									</td>
-									<td className='py-3 px-4 text-sm text-zinc-300'>
-										7 days ago
-									</td>
-									<td className='py-3 px-4 text-sm text-zinc-300'>
-										7 days ago
-									</td>
-									<td>
-										<button
-											className='flex items-center justify-center border border-white/10 bg-black/20 rounded-md size-7 p-1.5'
-											title='botão de ações'
-										>
-											<MoreHorizontal className='size-4 text-white' />
-										</button>
-									</td>
-								</tr>
-							);
-						})}
-					</tbody>
-					<tfoot>
-						<tr>
-							<td className='py-3 px-4 text-sm text-zinc-300' colSpan={3}>
-								Mostrando 10 de 150 itens
-							</td>
-							<td
-								className='py-3 px-4 text-sm text-zinc-300 text-right'
-								colSpan={3}
-							>
-								<div className='inline-flex items-center gap-8'>
-									<span>Página 1 de 23</span>
-									<div className=' flex gap-1.5'>
-										<button className='border border-white/10 bg-white/10 rounded-md size-7 p-1.5'>
-											<ChevronsLeft className='size-4 text-white' />
-										</button>
-										<button className='border border-white/10 bg-white/10 rounded-md size-7 p-1.5'>
-											<ChevronLeft className='size-4 text-white' />
-										</button>
-										<button className='border border-white/10 bg-white/10 rounded-md size-7 p-1.5'>
-											<ChevronRight className='size-4 text-white' />
-										</button>
-										<button className='border border-white/10 bg-white/10 rounded-md size-7 p-1.5'>
-											<ChevronsRight className='size-4 text-white' />
-										</button>
+			<Table>
+				<thead>
+					<tr className='border-b border-white/10'>
+						<TableHeader style={{ width: 48 }}>
+							<input
+								type='checkbox'
+								className='size-4 bg-black/20 rounded border border-white/10 checked:bg-orange-400'
+							/>
+						</TableHeader>
+						<TableHeader>Código</TableHeader>
+						<TableHeader>Participante</TableHeader>
+						<TableHeader>Data inscrição</TableHeader>
+						<TableHeader>Data do check-in</TableHeader>
+						<TableHeader style={{ width: 64 }}></TableHeader>
+					</tr>
+				</thead>
+				<tbody>
+					{attendees.slice((page - 1) * 10, page * 10).map((attendee) => {
+						return (
+							<TableRow key={attendee.id}>
+								<TableCell>
+									<input
+										type='checkbox'
+										className='size-4 bg-black/20 rounded border border-white/10 checked:bg-orange-400'
+									/>
+								</TableCell>
+								<TableCell>{attendee.id}</TableCell>
+								<TableCell>
+									<div className='flex flex-col gap-1'>
+										<span className='text-white font-semibold'>
+											{attendee.name}
+										</span>
+										<span>{attendee.email}</span>
 									</div>
+								</TableCell>
+								<TableCell>{dayjs().to(attendee.createdAt)}</TableCell>
+								<TableCell>{dayjs().to(attendee.checkedInAt)}</TableCell>
+								<TableCell>
+									<IconButton
+										transparent
+										className='flex items-center justify-center border border-white/10 bg-black/20 rounded-md size-7 p-1.5'
+										title='botão de ações'
+									>
+										<MoreHorizontal className='size-4 text-white' />
+									</IconButton>
+								</TableCell>
+							</TableRow>
+						);
+					})}
+				</tbody>
+				<tfoot>
+					<tr>
+						<TableCell colSpan={3}>
+							Mostrando 10 de {attendees.length} itens
+						</TableCell>
+						<TableCell className='text-right' colSpan={3}>
+							<div className='inline-flex items-center gap-8'>
+								<span>
+									Página {page} de {totalPages}
+								</span>
+								<div className=' flex gap-1.5'>
+									<IconButton onClick={goToFirstPage} disabled={page === 1}>
+										<ChevronsLeft className='size-4 text-white' />
+									</IconButton>
+									<IconButton onClick={goToPreviousPage} disabled={page === 1}>
+										<ChevronLeft className='size-4 text-white' />
+									</IconButton>
+									<IconButton
+										onClick={goToNextPage}
+										disabled={page === totalPages}
+									>
+										<ChevronRight className='size-4 text-white' />
+									</IconButton>
+									<IconButton
+										onClick={goToLastPage}
+										disabled={page === totalPages}
+									>
+										<ChevronsRight className='size-4 text-white' />
+									</IconButton>
 								</div>
-							</td>
-						</tr>
-					</tfoot>
-				</table>
-			</div>
+							</div>
+						</TableCell>
+					</tr>
+				</tfoot>
+			</Table>
 		</div>
 	);
 }
