@@ -14,14 +14,22 @@ import { Table } from "./table/table";
 import { TableHeader } from "./table/table-header";
 import { TableCell } from "./table/table-cell";
 import { TableRow } from "./table/table-row";
-import { attendees } from "../data/attendees";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 dayjs.extend(relativeTime);
 dayjs.locale("pt-br");
 
+interface Attendee {
+	id: string;
+	name: string;
+	email: string;
+	createdAt: string;
+	checkedInAt: string | null;
+}
+
 export function AttendeeList() {
 	const [page, setPage] = useState(1);
+	const [attendees, setAttendees] = useState<Attendee[]>([]);
 	const totalPages = Math.ceil(attendees.length / 10);
 
 	function goToNextPage() {
@@ -39,6 +47,17 @@ export function AttendeeList() {
 	function goToLastPage() {
 		setPage(totalPages);
 	}
+
+	useEffect(() => {
+		const eventID = "3AEBDDD5-86D3-4CBA-9885-2333588AB4D2";
+
+		fetch(`https://localhost:7032/api/attendees/${eventID}`)
+			.then((response) => response.json())
+			.then((data) => {
+				setAttendees(data.attendees);
+				console.log(data);
+			});
+	}, []);
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -80,7 +99,7 @@ export function AttendeeList() {
 										className='size-4 bg-black/20 rounded border border-white/10 checked:bg-orange-400'
 									/>
 								</TableCell>
-								<TableCell>{attendee.id}</TableCell>
+								<TableCell>{attendee.id.substring(0, 5)}</TableCell>
 								<TableCell>
 									<div className='flex flex-col gap-1'>
 										<span className='text-white font-semibold'>
@@ -90,7 +109,13 @@ export function AttendeeList() {
 									</div>
 								</TableCell>
 								<TableCell>{dayjs().to(attendee.createdAt)}</TableCell>
-								<TableCell>{dayjs().to(attendee.checkedInAt)}</TableCell>
+								<TableCell>
+									{attendee.checkedInAt === null ? (
+										<span className='text-zinc-500'>Não fez check-in</span>
+									) : (
+										dayjs().to(attendee.checkedInAt)
+									)}
+								</TableCell>
 								<TableCell>
 									<IconButton
 										transparent
